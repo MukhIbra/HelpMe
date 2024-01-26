@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "54119481429",
+    "project_id": "helpme-579e6",
+    "storage_bucket": "helpme-579e6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:54119481429:android:f8f2c492a12f0c790214dc",
+        "android_client_info": {
+          "package_name": "com.example.helpme"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDnrkQzUyuynvZHilqW4Ev_WVM6Vs9t12U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
