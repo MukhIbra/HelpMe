@@ -44,6 +44,8 @@ class StorageManager {
             users.child(phoneNumber).addListenerForSingleValueEvent(object : ValueEventListener {
 
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
+
+                    Log.d("TAG", "onCancelled: message")
                     if (dataSnapshot.exists()) {
                         callback(false)
                     } else {
@@ -53,7 +55,7 @@ class StorageManager {
 
 
                 override fun onCancelled(databaseError: DatabaseError) {
-
+                    Log.d("TAG", "onCancelled: ${databaseError.message}")
                     callback(false)
                 }
             })

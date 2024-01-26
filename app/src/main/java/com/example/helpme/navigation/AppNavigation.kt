@@ -9,7 +9,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.helpme.screens.HomeScreen
-import com.example.helpme.screens.OTPVerificationScreen
 import com.example.helpme.screens.SignInScreen
 import com.example.helpme.screens.SignUpScreen
 
@@ -26,15 +25,6 @@ fun AppNavigation(navController: NavHostController) {
         composable(route = Screens.Home.route) {
 
             HomeScreen(navController)
-        }
-        composable(route = Screens.OTPService.route,
-            arguments = listOf(
-                navArgument("number") {
-                    type = NavType.StringType
-                }
-            )) {    navBackStackEntry ->
-            val number = navBackStackEntry.arguments?.getString("number")
-            OTPVerificationScreen(navController, number = number!!)
         }
     }
 }
