@@ -2,6 +2,7 @@ package com.example.helpme
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.compose.ui.text.input.TextFieldValue
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -41,6 +42,7 @@ class StorageManager {
 
         fun checkUser(phoneNumber: String, callback: (Boolean) -> Unit) {
             users.child(phoneNumber).addListenerForSingleValueEvent(object : ValueEventListener {
+
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     if (dataSnapshot.exists()) {
                         callback(false)
@@ -49,7 +51,9 @@ class StorageManager {
                     }
                 }
 
+
                 override fun onCancelled(databaseError: DatabaseError) {
+
                     callback(false)
                 }
             })

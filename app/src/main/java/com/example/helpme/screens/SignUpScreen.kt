@@ -1,7 +1,10 @@
 package com.example.helpme.screens
 
+import android.app.Activity
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,76 +38,121 @@ import androidx.navigation.NavController
 import com.example.helpme.R
 import com.example.helpme.StorageManager
 import com.example.helpme.User
+import com.google.firebase.FirebaseException
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.PhoneAuthCredential
+import com.google.firebase.auth.PhoneAuthOptions
+import com.google.firebase.auth.PhoneAuthProvider
+import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(navController: NavController) {
     val context = LocalContext.current
-    var username by remember { mutableStateOf(TextFieldValue("")) }
+    var fullname by remember { mutableStateOf(TextFieldValue("")) }
+    var age by remember { mutableStateOf(TextFieldValue("")) }
+    var place by remember { mutableStateOf(TextFieldValue("")) }
     var phoneNumber by remember { mutableStateOf(TextFieldValue("")) }
     var password by remember { mutableStateOf(TextFieldValue("")) }
     val selectedOption = remember { mutableStateOf("Children") }
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(R.color.black)),
+            .background(colorResource(R.color.white)),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Text(
             modifier = Modifier.padding(vertical = 10.dp),
             text = "Sign Up",
-            color = colorResource(R.color.white),
+            color = colorResource(R.color.dark_blue),
             fontSize = 45.sp
         )
         OutlinedTextField(modifier = Modifier
             .fillMaxWidth(0.8f)
             .padding(vertical = 5.dp),
-            value = username,
+            value = fullname,
             colors = TextFieldDefaults.outlinedTextFieldColors(
-                textColor = colorResource(R.color.white),
-                focusedBorderColor = colorResource(R.color.yellow),
-                unfocusedBorderColor = colorResource(R.color.yellow),
-                focusedLabelColor = colorResource(R.color.white),
-                unfocusedLabelColor = colorResource(R.color.white),
+                textColor = colorResource(R.color.black),
+                focusedBorderColor = colorResource(R.color.dark_blue),
+                unfocusedBorderColor = colorResource(R.color.dark_blue),
+                focusedLabelColor = colorResource(R.color.dark_blue),
+                unfocusedLabelColor = colorResource(R.color.dark_blue),
             ),
             shape = RoundedCornerShape(10.dp),
-            label = { Text("Your Full Name", color = colorResource(R.color.white)) },
-            placeholder = { Text("Full Name", color = colorResource(R.color.white)) },
+            label = { Text("Your Full Name", color = colorResource(R.color.black)) },
+            placeholder = { Text("Full Name", color = colorResource(R.color.black)) },
             onValueChange = {
-                username = it
+                fullname = it
+            })
+        OutlinedTextField(modifier = Modifier
+            .fillMaxWidth(0.8f)
+            .padding(vertical = 5.dp),
+            value = age,
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                textColor = colorResource(R.color.black),
+                focusedBorderColor = colorResource(R.color.dark_blue),
+                unfocusedBorderColor = colorResource(R.color.dark_blue),
+                focusedLabelColor = colorResource(R.color.dark_blue),
+                unfocusedLabelColor = colorResource(R.color.dark_blue),
+            ),
+            shape = RoundedCornerShape(10.dp),
+            label = { Text("Your Age", color = colorResource(R.color.black)) },
+            placeholder = { Text("Age", color = colorResource(R.color.black)) },
+            onValueChange = {
+                age = it
+            })
+        OutlinedTextField(modifier = Modifier
+            .fillMaxWidth(0.8f)
+            .padding(vertical = 5.dp),
+            value = place,
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                textColor = colorResource(R.color.black),
+                focusedBorderColor = colorResource(R.color.dark_blue),
+                unfocusedBorderColor = colorResource(R.color.dark_blue),
+                focusedLabelColor = colorResource(R.color.dark_blue),
+                unfocusedLabelColor = colorResource(R.color.dark_blue),
+            ),
+            shape = RoundedCornerShape(10.dp),
+            label = { Text("Your School or Company", color = colorResource(R.color.black)) },
+            placeholder = { Text("School or Company", color = colorResource(R.color.black)) },
+            onValueChange = {
+                place = it
             })
         OutlinedTextField(modifier = Modifier
             .fillMaxWidth(0.8f)
             .padding(vertical = 5.dp),
             value = phoneNumber,
             colors = TextFieldDefaults.outlinedTextFieldColors(
-                textColor = colorResource(R.color.white),
-                focusedBorderColor = colorResource(R.color.yellow),
-                unfocusedBorderColor = colorResource(R.color.yellow),
-                focusedLabelColor = colorResource(R.color.white),
-                unfocusedLabelColor = colorResource(R.color.white),
+                textColor = colorResource(R.color.black),
+                focusedBorderColor = colorResource(R.color.dark_blue),
+                unfocusedBorderColor = colorResource(R.color.dark_blue),
+                focusedLabelColor = colorResource(R.color.dark_blue),
+                unfocusedLabelColor = colorResource(R.color.dark_blue),
             ),
             shape = RoundedCornerShape(10.dp),
-            label = { Text("Your Phone Number", color = colorResource(R.color.white)) },
-            placeholder = { Text("Phone Number", color = colorResource(R.color.white)) },
+            label = { Text("Your Phone Number", color = colorResource(R.color.black)) },
+            placeholder = { Text("Phone Number", color = colorResource(R.color.black)) },
             onValueChange = {
                 phoneNumber = it
             })
         OutlinedTextField(modifier = Modifier
             .fillMaxWidth(0.8f)
-            .padding(vertical = 5.dp),
+            .background(
+                Color.White,
+                shape = RoundedCornerShape(10.dp)
+            ),
             value = password,
             colors = TextFieldDefaults.outlinedTextFieldColors(
-                textColor = colorResource(R.color.white),
-                focusedBorderColor = colorResource(R.color.yellow),
-                unfocusedBorderColor = colorResource(R.color.yellow),
-                focusedLabelColor = colorResource(R.color.white),
-                unfocusedLabelColor = colorResource(R.color.white),
+                textColor = colorResource(R.color.black),
+                focusedBorderColor = colorResource(R.color.dark_blue),
+                unfocusedBorderColor = colorResource(R.color.dark_blue),
+                focusedLabelColor = colorResource(R.color.dark_blue),
+                unfocusedLabelColor = colorResource(R.color.dark_blue),
             ),
             shape = RoundedCornerShape(10.dp),
-            label = { Text("Your Password", color = colorResource(R.color.white)) },
-            placeholder = { Text("Password", color = colorResource(R.color.white)) },
+            label = { Text("Your Password", color = colorResource(R.color.black)) },
+            placeholder = { Text("Password", color = colorResource(R.color.black)) },
             onValueChange = {
                 password = it
             })
@@ -115,11 +164,11 @@ fun SignUpScreen(navController: NavController) {
                 selected = selectedOption.value == "Parent",
                 onClick = { selectedOption.value = "Parent" },
                 colors = RadioButtonDefaults.colors(
-                    selectedColor = colorResource(R.color.yellow),
+                    selectedColor = colorResource(R.color.dark_blue),
                     unselectedColor = colorResource(R.color.grey),
                 )
             )
-            Text("Parent", color = Color.White)
+            Text("Parent", color = Color.Black)
         }
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -129,52 +178,124 @@ fun SignUpScreen(navController: NavController) {
                 selected = selectedOption.value == "Children",
                 onClick = { selectedOption.value = "Children" },
                 colors = RadioButtonDefaults.colors(
-                    selectedColor = colorResource(R.color.yellow),
+                    selectedColor = colorResource(R.color.dark_blue),
                     unselectedColor = colorResource(R.color.grey),
                 )
             )
-            Text("Children", color = Color.White)
+            Text("Children", color = Color.Black)
         }
+
+
+
+
+
+        val verificationID = rememberSaveable {
+            mutableStateOf("")
+        }//Need this to get credentials
+
+        val codeSent = rememberSaveable {
+            mutableStateOf(false)
+        }//Optional- Added just to make consistent UI
+
+
+
+        val context = LocalContext.current
+        val mAuth: FirebaseAuth = FirebaseAuth.getInstance()
+        lateinit var callbacks: PhoneAuthProvider.OnVerificationStateChangedCallbacks
+
+        callbacks = object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+            override fun onVerificationCompleted(p0: PhoneAuthCredential) {
+                Toast.makeText(context, "Verification successful..", Toast.LENGTH_SHORT).show()
+//                loading.value = false
+            }
+
+            override fun onVerificationFailed(p0: FirebaseException) {
+                Toast.makeText(context, "Verification failed.. ${p0.message}", Toast.LENGTH_LONG)
+                    .show()
+//                loading.value = false
+            }
+
+            override fun onCodeSent(
+                verificationId: String,
+                p1: PhoneAuthProvider.ForceResendingToken
+            ) {
+                super.onCodeSent(verificationId, p1)
+                verificationID.value = verificationId
+                codeSent.value = true
+//                loading.value = false
+            }
+        }
+
         Button(modifier = Modifier.padding(vertical = 8.dp),
-            colors = ButtonDefaults.buttonColors(colorResource(R.color.yellow)),
+            colors = ButtonDefaults.buttonColors(colorResource(R.color.light_blue)),
             onClick = {
+
                 if (phoneNumber.text.length != 13 || " " in phoneNumber.text || phoneNumber.text.subSequence(
                         0, 4
                     ) != "+998"
                 ) {
                     Toast.makeText(context, "Invalid Phone Number", Toast.LENGTH_SHORT).show()
                 } else {
-                    StorageManager.checkUser(username.text) {
-                        if (it) {
-                            StorageManager.createUser(
-                                User(
-                                    username.text,
-                                    phoneNumber.text,
-                                    password.text,
-                                    selectedOption.value
-                                )
+
+//                    StorageManager.checkUser(phoneNumber.text) {
+
+                            Log.d("TAG", "SignUpScreen: ${"hello2"}")
+
+//                            StorageManager.createUser(
+//                                User(
+//                                    fullname.text,
+//                                    phoneNumber.text,
+//                                    password.text,
+//                                    selectedOption.value
+//                                )
+//                            )
+//                            StorageManager.saveUser(context, phoneNumber.text)
+//                            Toast.makeText(context, "Successful Login", Toast.LENGTH_SHORT).show()
+
+
+
+                            val number = "${phoneNumber.text}"
+                            sendVerificationCode(
+                                number,
+                                mAuth,
+                                context as Activity,
+                                callbacks
                             )
-                            StorageManager.saveUser(context, username.text)
-                            Toast.makeText(context, "Successful Login", Toast.LENGTH_SHORT).show()
-                            navController.navigate("Home")
-                        } else {
-                            Toast.makeText(context, "Username already exists", Toast.LENGTH_SHORT)
-                                .show()
+
+
+
+
+                            navController.navigate("OTP" + "/{$verificationID}")
+//                        } else {
+//                            Log.d("TAG", "SignUpScreen: ${"hello1"}")
+//                            Toast.makeText(context, "Username already exists", Toast.LENGTH_SHORT)
+//                                .show()
                         }
-                    }
-                }
+
+
             }) {
             Text(
                 modifier = Modifier.padding(vertical = 7.dp, horizontal = 15.dp),
                 text = "Sign Up",
                 fontSize = 20.sp,
-                color = colorResource(R.color.black)
+                color = colorResource(R.color.white)
             )
         }
-        Button(colors = ButtonDefaults.buttonColors(colorResource(R.color.black)), onClick = {
-            navController.navigate("SignIn")
-        }) {
-            Text("Already have an account", color = colorResource(R.color.white))
-        }
+        Text(modifier = Modifier.clickable { navController.navigate("SignIn") }, text = "Already have an account", color = colorResource(R.color.black))
     }
+}
+
+private fun sendVerificationCode(
+    number: String,
+    auth: FirebaseAuth,
+    activity: Activity,
+    callbacks: PhoneAuthProvider.OnVerificationStateChangedCallbacks
+) {
+    val options = PhoneAuthOptions.newBuilder(auth)
+        .setPhoneNumber(number)
+        .setTimeout(60L, TimeUnit.SECONDS)
+        .setActivity(activity)
+        .setCallbacks(callbacks)
+        .build()
+    PhoneAuthProvider.verifyPhoneNumber(options)
 }

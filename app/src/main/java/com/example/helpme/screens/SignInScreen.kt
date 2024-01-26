@@ -2,6 +2,7 @@ package com.example.helpme.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,14 +40,14 @@ fun SignInScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(R.color.black)),
+            .background(colorResource(R.color.white)),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Text(
             modifier = Modifier.padding(vertical = 10.dp),
             text = "Sign In",
-            color = colorResource(R.color.white),
+            color = colorResource(R.color.dark_blue),
             fontSize = 45.sp
         )
         OutlinedTextField(modifier = Modifier
@@ -54,15 +55,15 @@ fun SignInScreen(navController: NavController) {
             .padding(vertical = 5.dp),
             value = username,
             colors = TextFieldDefaults.outlinedTextFieldColors(
-                textColor = colorResource(R.color.white),
-                focusedBorderColor = colorResource(R.color.yellow),
-                unfocusedBorderColor = colorResource(R.color.yellow),
-                focusedLabelColor = colorResource(R.color.white),
-                unfocusedLabelColor = colorResource(R.color.white),
+                textColor = colorResource(R.color.black),
+                focusedBorderColor = colorResource(R.color.dark_blue),
+                unfocusedBorderColor = colorResource(R.color.dark_blue),
+                focusedLabelColor = colorResource(R.color.dark_blue),
+                unfocusedLabelColor = colorResource(R.color.dark_blue),
             ),
             shape = RoundedCornerShape(10.dp),
-            label = { Text("Your Phone Number", color = colorResource(R.color.white)) },
-            placeholder = { Text("Phone Number", color = colorResource(R.color.white)) },
+            label = { Text("Your Phone Number", color = colorResource(R.color.black)) },
+            placeholder = { Text("Phone Number", color = colorResource(R.color.black)) },
             onValueChange = {
                 username = it
             })
@@ -71,20 +72,20 @@ fun SignInScreen(navController: NavController) {
             .padding(vertical = 5.dp),
             value = password,
             colors = TextFieldDefaults.outlinedTextFieldColors(
-                textColor = colorResource(R.color.white),
-                focusedBorderColor = colorResource(R.color.yellow),
-                unfocusedBorderColor = colorResource(R.color.yellow),
-                focusedLabelColor = colorResource(R.color.white),
-                unfocusedLabelColor = colorResource(R.color.white),
+                textColor = colorResource(R.color.black),
+                focusedBorderColor = colorResource(R.color.dark_blue),
+                unfocusedBorderColor = colorResource(R.color.dark_blue),
+                focusedLabelColor = colorResource(R.color.dark_blue),
+                unfocusedLabelColor = colorResource(R.color.dark_blue),
             ),
             shape = RoundedCornerShape(10.dp),
-            label = { Text("Your Password", color = colorResource(R.color.white)) },
-            placeholder = { Text("Password", color = colorResource(R.color.white)) },
+            label = { Text("Your Password", color = colorResource(R.color.black)) },
+            placeholder = { Text("Password", color = colorResource(R.color.black)) },
             onValueChange = {
                 password = it
             })
         Button(modifier = Modifier.padding(vertical = 8.dp),
-            colors = ButtonDefaults.buttonColors(colorResource(R.color.yellow)),
+            colors = ButtonDefaults.buttonColors(colorResource(R.color.light_blue)),
             onClick = {
                 StorageManager.getUser(username, password) { result ->
                     Toast.makeText(context, result, Toast.LENGTH_SHORT).show()
@@ -98,13 +99,9 @@ fun SignInScreen(navController: NavController) {
                 modifier = Modifier.padding(vertical = 7.dp, horizontal = 15.dp),
                 text = "Sign In",
                 fontSize = 20.sp,
-                color = colorResource(R.color.black)
+                color = colorResource(R.color.white)
             )
         }
-        Button(colors = ButtonDefaults.buttonColors(colorResource(R.color.black)), onClick = {
-            navController.navigate("SignUp")
-        }) {
-            Text("Do not have an account", color = colorResource(R.color.white))
-        }
+        Text(modifier = Modifier.clickable { navController.navigate("SignUp") }, text = "Do not have an account", color = colorResource(R.color.black))
     }
 }
