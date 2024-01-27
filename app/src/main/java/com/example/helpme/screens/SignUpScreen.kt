@@ -55,6 +55,7 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthOptions
 import com.google.firebase.auth.PhoneAuthProvider
+import okhttp3.internal.notifyAll
 import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -370,6 +371,8 @@ fun SignUpScreen(navController: NavController) {
                             .addOnCompleteListener(context as Activity) { task ->
                                 if (task.isSuccessful) {
                                     //Code after auth is successful
+
+                                    navController.navigate("Home")
                                 } else {
                                     loading.value = false
                                     if (task.exception is FirebaseAuthInvalidCredentialsException) {
