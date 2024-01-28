@@ -1,6 +1,7 @@
 package com.example.helpme.navigation
 
 sealed class Screens(val route: String) {
+    object Splash : Screens("Splash")
     object SignIn : Screens("SignIn")
     object SignUp : Screens("SignUp")
     object Home : Screens("Home")

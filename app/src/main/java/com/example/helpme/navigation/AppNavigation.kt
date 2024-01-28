@@ -11,11 +11,15 @@ import com.example.helpme.screens.SignUpScreen
 import com.example.helpme.screens.HomeScreen
 import com.example.helpme.screens.PsychoHelpScreen
 import com.example.helpme.screens.SelfDefenceScreen
+import com.example.helpme.screens.SplashScreen
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNavigation(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = Screens.SignIn.route) {
+    NavHost(navController = navController, startDestination = Screens.Splash.route) {
+        composable(route = Screens.Splash.route) {
+            SplashScreen(navController)
+        }
         composable(route = Screens.SignIn.route) {
             SignInScreen(navController)
         }
