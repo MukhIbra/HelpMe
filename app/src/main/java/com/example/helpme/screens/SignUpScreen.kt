@@ -29,7 +29,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
@@ -74,7 +73,6 @@ import com.google.firebase.auth.PhoneAuthProvider
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import okhttp3.internal.notifyAll
 import java.util.concurrent.TimeUnit
 
 
@@ -85,7 +83,6 @@ var locationRequired = false
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(navController: NavController) {
-
 
 
     val context = LocalContext.current
@@ -485,32 +482,25 @@ fun SignUpScreen(navController: NavController) {
 
 
 
-                                    StorageManager.findRole(StorageManager.getSavedUser(context), object :Callback<String> {
-                                        override fun onResponse(
-                                            call: Call<String>,
-                                            response: Response<String>
-                                        ) {
-                                            if (response.isSuccessful) {
-                                                if (response.body() == "Parent") {
-                                                    navController.navigate("HomeParent") {
-                                                        popUpTo(navController.graph.id) {
-                                                            inclusive = true
-                                                        }
-                                                    }
-                                                } else {
-                                                    navController.navigate("Home") {
-                                                        popUpTo(navController.graph.id) {
-                                                            inclusive = true
-                                                        }
-                                                    }
+                                    StorageManager.findRole(StorageManager.getSavedUser(context)) {
+
+
+                                        if (it == "Parent") {
+                                            navController.navigate("HomeParent") {
+                                                popUpTo(navController.graph.id) {
+                                                    inclusive = true
+                                                }
+                                            }
+                                        } else {
+                                            navController.navigate("Home") {
+                                                popUpTo(navController.graph.id) {
+                                                    inclusive = true
                                                 }
                                             }
                                         }
 
-                                        override fun onFailure(call: Call<String>, t: Throwable) {
-                                            Log.d("TAG", "onFailure: ${t.message}")
-                                        }
-                                    })
+
+                                    }
                                 } else {
                                     loading.value = false
                                     if (task.exception is FirebaseAuthInvalidCredentialsException) {

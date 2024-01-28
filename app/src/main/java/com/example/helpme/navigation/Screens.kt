@@ -8,4 +8,6 @@ sealed class Screens(val route: String) {
     object PsychoHelp : Screens("PsychoHelp")
     object SelfDefence : Screens("SelfDefence")
     object HomeParent : Screens("HomeParent")
+    object SOSScreen : Screens("SOS" + "/{us}")
+
 }

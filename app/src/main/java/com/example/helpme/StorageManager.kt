@@ -3,6 +3,14 @@ package com.example.helpme
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.TextFieldValue
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -20,15 +28,15 @@ data class User(
     var username: String?,
     var phoneNumber: String?,
     var password: String?,
-    var role: String?,
+    var role: String?
 ) {
     constructor() : this(null, null, null, null)
 }
-
 class StorageManager {
     companion object {
         private val users = FirebaseDatabase.getInstance().reference.child("users")
         private val connection = FirebaseDatabase.getInstance().reference.child("connection")
+
 
         fun saveUser(context: Context, phoneNumber: String) {
             val sharedPreferences: SharedPreferences =
@@ -140,18 +148,21 @@ class StorageManager {
             })
         }
 
-        fun getUsers(callback: (List<User>)-> Unit) {
+        fun findRole(phoneNumber: String, callback: (String)-> Unit) {
             users.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    val users = mutableListOf<User>()
                     for (data in dataSnapshot.children) {
-                        data.getValue(User::class.java)?.let { users.add(it) }
+                        val user = data.getValue(User::class.java)
+                        if (user != null) {
+                            if (user.phoneNumber == phoneNumber) {
+                                user.role?.let { callback(it) }
+                            }
+                        }
                     }
-                    callback(users)
                 }
 
                 override fun onCancelled(databaseError: DatabaseError) {
-                    callback(emptyList())
+                    callback(databaseError.message)
                 }
             })
         }
@@ -161,19 +172,28 @@ class StorageManager {
             }
         }
 
-        fun findRole(phoneNumber: String, callback: (String) ->Unit){
-            var users = emptyList<User>()
-            getUsers {
-                users = it
-            }
 
-            for (user in users){
-                if (phoneNumber == user.phoneNumber){
-                    callback(user.role!!)
+        fun getUserr(key: String, callback: (String) -> Unit) {
+            users.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    for (data in dataSnapshot.children) {
+                        if (data.getValue(User::class.java)?.phoneNumber == key) data.key?.let {
+                            callback(
+                                it
+                            )
+                        }
+                    }
                 }
-            }
 
-
+                override fun onCancelled(databaseError: DatabaseError) {
+                    callback(databaseError.toString())
+                }
+            })
         }
+
+
+
+
+
     }
 }

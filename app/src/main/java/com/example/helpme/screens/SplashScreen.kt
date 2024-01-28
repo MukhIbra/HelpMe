@@ -1,5 +1,6 @@
 package com.example.helpme.screens
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,43 +19,38 @@ import retrofit2.Callback
 import retrofit2.Response
 
 @Composable
-fun SplashScreen(navController: NavController){
+fun SplashScreen(navController: NavController) {
     val context = LocalContext.current
     LaunchedEffect(true) {
 
         delay(3000)
-        if (StorageManager.getSavedUser(context) == "")
+        Log.d("TAG", "SplashScreen: ${StorageManager.getSavedUser(context)}")
+        if (StorageManager.getSavedUser(context) == "") {
             navController.navigate("SignIn") {
                 popUpTo(navController.graph.id) {
                     inclusive = true
                 }
             }
-        else {
+        } else {
 
-            StorageManager.findRole(StorageManager.getSavedUser(context), object :Callback<String>{
-                override fun onResponse(call: Call<String>, response: Response<String>) {
-                    if (response.isSuccessful){
-                        if (response.body() == "Parent"){
-                            navController.navigate("HomeParent") {
-                                popUpTo(navController.graph.id) {
-                                    inclusive = true
-                                }
-                            }
-                        }else{
-                            navController.navigate("Home") {
-                                popUpTo(navController.graph.id) {
-                                    inclusive = true
-                                }
-                            }
+            StorageManager.findRole(StorageManager.getSavedUser(context)) {
+                Log.d("TAG", "SplashScreen: ${it}")
+                if (it == "Parent") {
+                    navController.navigate("HomeParent") {
+                        popUpTo(navController.graph.id) {
+                            inclusive = true
+                        }
+                    }
+                } else {
+                    navController.navigate("Home") {
+                        popUpTo(navController.graph.id) {
+                            inclusive = true
                         }
                     }
                 }
 
-                override fun onFailure(call: Call<String>, t: Throwable) {
-                    TODO("Not yet implemented")
-                }
 
-            })
+            }
 
         }
     }
