@@ -39,5 +39,8 @@ fun AppNavigation(navController: NavHostController) {
         composable(route = Screens.PsychoHelp.route) {
             PsychoHelpScreen(navController)
         }
+        composable(route = Screens.HomeParent.route) {
+            HomeScreen(navController)
+        }
     }
 }

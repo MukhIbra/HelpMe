@@ -8,7 +8,14 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import retrofit2.Callback
 
+data class Connection(
+    var from: String?,
+    var to: String?,
+) {
+    constructor() : this(null, null)
+}
 data class User(
     var username: String?,
     var phoneNumber: String?,
@@ -21,6 +28,7 @@ data class User(
 class StorageManager {
     companion object {
         private val users = FirebaseDatabase.getInstance().reference.child("users")
+        private val connection = FirebaseDatabase.getInstance().reference.child("connection")
 
         fun saveUser(context: Context, phoneNumber: String) {
             val sharedPreferences: SharedPreferences =
@@ -37,7 +45,7 @@ class StorageManager {
         }
 
         fun createUser(user: User) {
-            users.child(user.username!!).setValue(user)
+            users.push().setValue(user)
         }
 
         fun checkUser(phoneNumber: String, callback: (Boolean) -> Unit) {
@@ -60,6 +68,22 @@ class StorageManager {
                 }
             })
         }
+        fun checkChild(user: String, callback: (String) -> Unit) {
+            users.child(user).addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        callback("Success")
+                    } else {
+                        callback("User not exists")
+                    }
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    callback("Server error")
+                }
+            })
+        }
+
 
         fun getUser(
             username: TextFieldValue, password: TextFieldValue, callback: (String) -> Unit
@@ -77,6 +101,79 @@ class StorageManager {
                     callback("Database Error")
                 }
             })
+        }
+
+        private fun getUserfromKey(key: String, callback: (String) -> Unit) {
+            users.child(key).addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val data = dataSnapshot.getValue(User::class.java)!!.username
+                    if (data != null) {
+                        callback(data)
+                    } else callback("Error")
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    callback("")
+                }
+            })
+        }
+
+        fun getChilds(user: String, callback: (List<String>) -> Unit) {
+            connection.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val users = mutableListOf<String>()
+                    val children = dataSnapshot.children
+                    children.forEach {
+                        val connection = it.getValue(Connection::class.java)
+                        if (connection != null) {
+                            if (connection.from == user) {
+                                connection.to?.let { users.add(it) }
+                            }
+                        }
+                    }
+                    callback(users)
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    callback(emptyList())
+                }
+            })
+        }
+
+        fun getUsers(callback: (List<User>)-> Unit) {
+            users.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val users = mutableListOf<User>()
+                    for (data in dataSnapshot.children) {
+                        data.getValue(User::class.java)?.let { users.add(it) }
+                    }
+                    callback(users)
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    callback(emptyList())
+                }
+            })
+        }
+        fun addChild(context: Context, key: String) {
+            getUserfromKey(key) {
+                connection.push().setValue(Connection(getSavedUser(context), it))
+            }
+        }
+
+        fun findRole(phoneNumber: String, callback: (String) ->Unit){
+            var users = emptyList<User>()
+            getUsers {
+                users = it
+            }
+
+            for (user in users){
+                if (phoneNumber == user.phoneNumber){
+                    callback(user.role!!)
+                }
+            }
+
+
         }
     }
 }

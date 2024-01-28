@@ -1,8 +1,15 @@
 package com.example.helpme.screens
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.pm.PackageManager
+import android.os.Looper
 import android.text.TextUtils
+import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
@@ -45,22 +52,42 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.example.helpme.R
 import com.example.helpme.StorageManager
 import com.example.helpme.User
+import com.example.helpme.data.LocationDetails
+import com.example.joshqinshop.networking.APIClient
+import com.example.joshqinshop.networking.APIService
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthOptions
 import com.google.firebase.auth.PhoneAuthProvider
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import okhttp3.internal.notifyAll
 import java.util.concurrent.TimeUnit
+
+
+var locationCallback: LocationCallback? = null
+var fusedLocationClient: FusedLocationProviderClient? = null
+var locationRequired = false
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(navController: NavController) {
+
+
+
     val context = LocalContext.current
     var fullname by remember { mutableStateOf(TextFieldValue("")) }
     var age by remember { mutableStateOf(TextFieldValue("")) }
@@ -69,6 +96,10 @@ fun SignUpScreen(navController: NavController) {
     var password by remember { mutableStateOf(TextFieldValue("")) }
     val selectedOption = remember { mutableStateOf("Children") }
 
+    var currUserNumber = StorageManager.getSavedUser(context = context)
+    var currentLocation by remember {
+        mutableStateOf(LocationDetails(0.toDouble(), 0.toDouble(), currUserNumber))
+    }
 
     val otp = rememberSaveable {
         mutableStateOf("")
@@ -245,29 +276,29 @@ fun SignUpScreen(navController: NavController) {
                     ) {
                         Toast.makeText(context, "Invalid Phone Number", Toast.LENGTH_SHORT).show()
                     } else {
-//                        StorageManager.checkUser(phoneNumber.text) {
-//                            if (it) {
-//                                StorageManager.createUser(
-//                                    User(
-//                                        fullname.text,
-//                                        phoneNumber.text,
-//                                        password.text,
-//                                        selectedOption.value
-//                                    )
-//                                )
-//                                StorageManager.saveUser(context, phoneNumber.text)
-//                                Toast.makeText(context, "Successful Sign Up", Toast.LENGTH_SHORT)
-//                                    .show()
+                        StorageManager.checkUser(phoneNumber.text) {
+                            if (it) {
+                                StorageManager.createUser(
+                                    User(
+                                        fullname.text,
+                                        phoneNumber.text,
+                                        password.text,
+                                        selectedOption.value
+                                    )
+                                )
+                                StorageManager.saveUser(context, phoneNumber.text)
+                                Toast.makeText(context, "Successful Sign Up", Toast.LENGTH_SHORT)
+                                    .show()
 
-//                            } else {
-//                                Toast.makeText(
-//                                    context,
-//                                    "Username already exists",
-//                                    Toast.LENGTH_SHORT
-//                                )
-//                                    .show()
-//                            }
-//                        }
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Username already exists",
+                                    Toast.LENGTH_SHORT
+                                )
+                                    .show()
+                            }
+                        }
                         visible = !visible
                         if (TextUtils.isEmpty(phoneNumber.text) || phoneNumber.text.length < 10) {
                             Toast.makeText(
@@ -305,6 +336,7 @@ fun SignUpScreen(navController: NavController) {
 //    if (loading.value) {
 //        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
 //    }
+
 
     callbacks = object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
         override fun onVerificationCompleted(p0: PhoneAuthCredential) {
@@ -349,7 +381,18 @@ fun SignUpScreen(navController: NavController) {
             )
 
             Spacer(modifier = Modifier.height(10.dp))
-
+            val launcherMultiplePermissions = rememberLauncherForActivityResult(
+                ActivityResultContracts.RequestMultiplePermissions()
+            ) { permissionsMap ->
+                val areGranted = permissionsMap.values.reduce { acc, next -> acc && next }
+                if (areGranted) {
+                    locationRequired = true
+                    startLocationUpdates()
+                    Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
+                }
+            }
             Button(
                 enabled = !loading.value,
                 onClick = {
@@ -372,7 +415,102 @@ fun SignUpScreen(navController: NavController) {
                                 if (task.isSuccessful) {
                                     //Code after auth is successful
 
-                                    navController.navigate("Home")
+                                    var api = APIClient.getInstance().create(APIService::class.java)
+
+
+
+
+                                    fusedLocationClient =
+                                        LocationServices.getFusedLocationProviderClient(context)
+                                    locationCallback = object : LocationCallback() {
+                                        override fun onLocationResult(p0: LocationResult) {
+                                            for (lo in p0.locations) {
+                                                // Update UI with location data
+                                                currentLocation = LocationDetails(
+                                                    lo.latitude,
+                                                    lo.longitude,
+                                                    currUserNumber
+                                                )
+                                            }
+                                        }
+                                    }
+
+
+                                    val permissions = arrayOf(
+                                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                                        Manifest.permission.ACCESS_FINE_LOCATION,
+
+
+                                        )
+//                                    Button(onClick = {
+                                    if (permissions.all {
+                                            ContextCompat.checkSelfPermission(
+                                                context,
+                                                it
+                                            ) == PackageManager.PERMISSION_GRANTED
+                                        }) {
+                                        // Get the location
+                                        startLocationUpdates()
+                                    } else {
+                                        launcherMultiplePermissions.launch(permissions)
+                                    }
+//                                    }) {
+
+//                                    }
+                                    Log.d(
+                                        "TAG",
+                                        "onCreate: ${currentLocation.latitude}  ${currentLocation.longitude}"
+                                    )
+                                    api.postData(currentLocation)
+                                        .enqueue(object : Callback<LocationDetails> {
+                                            override fun onResponse(
+                                                call: Call<LocationDetails>,
+                                                response: Response<LocationDetails>
+                                            ) {
+                                                if (response.isSuccessful) {
+
+                                                }
+                                            }
+
+                                            override fun onFailure(
+                                                call: Call<LocationDetails>,
+                                                t: Throwable
+                                            ) {
+                                                Log.d("TAG", "onFailure: ${t.message}")
+                                            }
+
+                                        })
+
+
+
+
+
+                                    StorageManager.findRole(StorageManager.getSavedUser(context), object :Callback<String> {
+                                        override fun onResponse(
+                                            call: Call<String>,
+                                            response: Response<String>
+                                        ) {
+                                            if (response.isSuccessful) {
+                                                if (response.body() == "Parent") {
+                                                    navController.navigate("HomeParent") {
+                                                        popUpTo(navController.graph.id) {
+                                                            inclusive = true
+                                                        }
+                                                    }
+                                                } else {
+                                                    navController.navigate("Home") {
+                                                        popUpTo(navController.graph.id) {
+                                                            inclusive = true
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        override fun onFailure(call: Call<String>, t: Throwable) {
+                                            Log.d("TAG", "onFailure: ${t.message}")
+                                        }
+                                    })
                                 } else {
                                     loading.value = false
                                     if (task.exception is FirebaseAuthInvalidCredentialsException) {
@@ -401,7 +539,7 @@ fun SignUpScreen(navController: NavController) {
             }
         }
 
-        
+
     }
 }
 
@@ -418,4 +556,21 @@ private fun sendVerificationCode(
         .setCallbacks(callbacks)
         .build()
     PhoneAuthProvider.verifyPhoneNumber(options)
+}
+
+
+@SuppressLint("MissingPermission")
+private fun startLocationUpdates() {
+    locationCallback?.let {
+        val locationRequest = LocationRequest.create().apply {
+            interval = 10000
+            fastestInterval = 5000
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        }
+        fusedLocationClient?.requestLocationUpdates(
+            locationRequest,
+            it,
+            Looper.getMainLooper()
+        )
+    }
 }

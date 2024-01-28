@@ -61,6 +61,7 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("com.google.firebase:firebase-database:20.3.0")
     implementation("com.android.volley:volley:1.2.1")
+    implementation("com.google.android.gms:play-services-location:21.1.0")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
@@ -74,6 +75,7 @@ dependencies {
     //Firebase
     implementation ("com.google.firebase:firebase-auth-ktx:22.3.0")
     implementation ("com.google.firebase:firebase-analytics-ktx:21.5.0")
+    implementation ("com.google.firebase:firebase-messaging")
 
     //Lottie
     implementation ("com.airbnb.android:lottie:4.1.0")
@@ -87,5 +89,19 @@ dependencies {
     }
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0") {
         because("kotlin-stdlib-jdk8 is now a part of kotlin-stdlib")
+
+
+        implementation("com.squareup.retrofit2:retrofit:2.9.0")
+
+        // GSON
+        implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+        implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+
+        implementation ("com.google.android.gms:play-services-location:19.0.1")
+        implementation ("androidx.compose.runtime:runtime-livedata")
+
+        implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
     }
 }
